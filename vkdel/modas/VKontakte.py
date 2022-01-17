@@ -48,7 +48,7 @@ async def handler(message: Message):
         # Photo...
         # - - - - - - - - - - - - - - - 
         if attachments[0].photo:
-            content = requests.get(f"{attachments[0].photo.sizes[5].url}").content
+            content = requests.get(f"{get_max_size(attachments[0].photo.sizes)}").content
             open(f"./downloads/photo_{timestamp}.jpg", "+wb").write(content)
             if name:
                 await tgbot.send_message(
@@ -146,6 +146,14 @@ async def handler(message: Message):
         f"{name}" \
         f"{message.text}{reply}"
    )
+
+def get_max_size(sizes: list):
+    if getattr(sizes[0], "type", None):
+        size_values = list("opqrsmxklyzcwid")
+        max_size = sorted(sizes, key=lambda x: size_values.index(x.type.value))[-1]
+    else:
+        max_size = sorted(sizes, key=lambda x: x.width + x.height)[-1]
+    return getattr(max_size, "url", None) or getattr(max_size, "src", None)
 
 async def get_replied_text(message):
     attachments = message.attachments
